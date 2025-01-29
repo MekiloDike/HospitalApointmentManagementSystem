@@ -57,5 +57,42 @@ namespace HospitalApointmentManagementSystem.Controllers
             }
             return BadRequest(registerDoctor);
         }
+
+
+        [HttpPost]
+        [Route("Add_Doctor_Availability")]
+        public async Task<IActionResult> AddDoctorAvailabilityById(AddAvailabilityDto availabilityDto)
+        {
+            var addDoctorAvailability = await _doctorService.AddDoctorAvailabilityById(availabilityDto);
+            if (addDoctorAvailability.Success)
+            {
+                return Ok(addDoctorAvailability);
+            }
+            return BadRequest(addDoctorAvailability);
+        }
+
+        [HttpGet]
+        [Route("GetDoctorAvailabilty")]
+        public async Task<IActionResult> GetDoctorAvailabilityById(int doctorId)
+        {
+            var getDoctorAvailabilty = await _doctorService.GetDoctorAvailabilityById(doctorId);
+            if (getDoctorAvailabilty.Success)
+            {
+                return Ok(getDoctorAvailabilty);
+            }
+            return BadRequest(getDoctorAvailabilty);
+        }
+
+        [HttpPost]
+        [Route("UpdateDoctorAvailabilty")]
+        public async Task<IActionResult> UpdateDoctorAvailabilty(UpdateAvailabilityDto availabilityDto, int availabiltyId)
+        {
+            var updateDoctor = await _doctorService.UPdateDoctorAvailability(availabilityDto, availabiltyId);
+            if (updateDoctor.Success)
+            {
+                return Ok(updateDoctor);
+            }
+            return BadRequest(updateDoctor);
+        }
     }
 }

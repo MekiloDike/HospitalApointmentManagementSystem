@@ -28,7 +28,7 @@ namespace HospitalApointmentManagementSystem.DTO
         //public SpecializationDto SpecializationDto { get; set; }
         public string SpecializationName { get; set; }
         public string Description { get; set; }
-        public List<AvailabilityDto>? Availability { get; set; }
+        public List<GetAvailabilityDto>? Availability { get; set; }
         public List<AppointmentDto>? Appointment { get; set; }
     }
 
@@ -38,7 +38,24 @@ namespace HospitalApointmentManagementSystem.DTO
         public string Description { get; set; }
     }
 
-    public class AvailabilityDto
+    public class AddAvailabilityDto
+    {
+        public int DoctorId { get; set; }        
+        public DayOfWeek Day { get; set; }
+        public DateTime DateTime { get; set; }
+        public string Duration { get; set; }
+        public bool IsAvailable { get; set; }
+
+    }public class GetAvailabilityDto
+    {
+        public int DoctorId { get; set; }   
+        public int AvalabilityId { get; set; }           
+        public DayOfWeek Day { get; set; }
+        public DateTime DateTime { get; set; }
+        public string Duration { get; set; }
+        public bool IsAvailable { get; set; }
+
+    }public class UpdateAvailabilityDto
     {
         public DayOfWeek Day { get; set; }
         public DateTime DateTime { get; set; }

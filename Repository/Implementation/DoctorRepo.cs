@@ -30,7 +30,7 @@ namespace HospitalApointmentManagementSystem.Repository.Implementation
                 .Include(x => x.Appointment)
                 .Include(x => x.Availability)
                 .AsQueryable();
-            
+
 
             if (entities == null)
             {
@@ -40,7 +40,7 @@ namespace HospitalApointmentManagementSystem.Repository.Implementation
             if (!string.IsNullOrEmpty(searchOption.keyWord))
             {
                 entities = entities.Where(x => x.Name.Contains(searchOption.keyWord) || x.Email.Contains(searchOption.keyWord) || x.Specialization.SpecializationName.Contains(searchOption.keyWord));
-            }            
+            }
             //filtering
             if (!string.IsNullOrEmpty(searchOption.filterOption))
             {
@@ -67,7 +67,7 @@ namespace HospitalApointmentManagementSystem.Repository.Implementation
                     Status = x.Status,
                 });
 
-                var availability = entity.Availability.Select(x => new AvailabilityDto
+                var availability = entity.Availability.Select(x => new GetAvailabilityDto
                 {
                     DateTime = x.DateTime,
                     Day = x.Day,
@@ -91,7 +91,7 @@ namespace HospitalApointmentManagementSystem.Repository.Implementation
             }
             //sorting
             getDoctorslist.OrderBy(x => x.Name).ToList();
-            return new GenResponse<PaginatedResponse<List<GetDoctorDto>>> { Success = true, Message = "Successful", Body = new PaginatedResponse<List<GetDoctorDto>> { Records = getDoctorslist, TotalRecord = total} };
+            return new GenResponse<PaginatedResponse<List<GetDoctorDto>>> { Success = true, Message = "Successful", Body = new PaginatedResponse<List<GetDoctorDto>> { Records = getDoctorslist, TotalRecord = total } };
 
 
         }
@@ -130,7 +130,7 @@ namespace HospitalApointmentManagementSystem.Repository.Implementation
 
             }).ToList();
 
-            var availability = entity.Availability.Select(x => new AvailabilityDto
+            var availability = entity.Availability.Select(x => new GetAvailabilityDto
             {
                 DateTime = x.DateTime,
                 Day = x.Day,
@@ -178,6 +178,109 @@ namespace HospitalApointmentManagementSystem.Repository.Implementation
             await _appDbContext.Doctors.AddAsync(doctor);
             var isSaved = await _appDbContext.SaveChangesAsync() > 0;
             return new GenResponse<bool> { Success = isSaved, Message = "Doctor successfully registered", Body = isSaved };
+        }
+
+        public async Task<GenResponse<bool>> AddDoctorAvailabilityById(AddAvailabilityDto availabilityDto)
+        {
+            // check if doctor exist
+            // map the availablities details
+            // add and save changes
+
+            var doctorEntity = await _appDbContext.Doctors.FirstOrDefaultAsync(x => x.Id == availabilityDto.DoctorId);
+            if (doctorEntity == null)
+            {
+                return new GenResponse<bool> { Success = false, Message = "doctor with Id does not exist", Body = false };
+            }
+
+            var availabilty = new Availability
+            {
+                DateTime = availabilityDto.DateTime,
+                Day = availabilityDto.Day,
+                Duration = availabilityDto.Duration,
+                IsAvailable = availabilityDto.IsAvailable,
+                DoctorId = availabilityDto.DoctorId,
+                Doctor = doctorEntity
+            };
+
+            await _appDbContext.Availabilities.AddAsync(availabilty);
+            var isSaved = await _appDbContext.SaveChangesAsync() > 0;
+            return new GenResponse<bool> { Body = isSaved, Success = isSaved, Message = "doctors availability successfully saved" };
+        }
+
+
+
+
+
+        public async Task<GenResponse<List<GetAvailabilityDto>>> GetDoctorAvailabilityById(int doctorId)
+        {
+            var doctorEntity = await _appDbContext.Doctors.FirstOrDefaultAsync(d => d.Id == doctorId);
+
+            if (doctorEntity == null)
+            {
+                return new GenResponse<List<GetAvailabilityDto>> { Success = false, Message = "doctor does not exist" };
+            }
+
+            var availabilityEntity = await _appDbContext.Availabilities
+                //.Include(x => x.Doctor)
+                .Where(x => x.DoctorId == doctorId && x.IsAvailable).ToListAsync();
+
+            if (availabilityEntity == null)
+            {
+                return new GenResponse<List<GetAvailabilityDto>> { Success = false, Message = "doctor does not exist" };
+            }
+            var availabilityList = new List<GetAvailabilityDto>();
+
+            foreach (var availability in availabilityEntity)
+            {
+
+                var availabilityDto = new GetAvailabilityDto
+                {
+                    DateTime = availability.DateTime,
+                    Day = availability.Day,
+                    Duration = availability.Duration,
+                    IsAvailable = availability.IsAvailable,
+                    DoctorId = availability.DoctorId,
+                    AvalabilityId = availability.Id
+                };
+                availabilityList.Add(availabilityDto);
+            }
+
+            /*var availabilityDto = await _appDbContext.Availabilities
+           //.Include(x => x.Doctor)
+           .Where(x => x.DoctorId == doctorId)
+           .Select(a => new GetAvailabilityDto
+           {
+               DateTime = a.DateTime,
+               Day = a.Day,
+               Duration = a.Duration,
+               IsAvailable = a.IsAvailable,
+               DoctorId = a.DoctorId,
+               AvalabilityId= a.Id
+           })
+           .ToListAsync();
+*/
+            return new GenResponse<List<GetAvailabilityDto>> { Body = availabilityList, Success = true };
+
+        }
+
+
+
+        public async Task<GenResponse<bool>> UPdateDoctorAvailability(UpdateAvailabilityDto availabilityDto, int availabilityId)
+        {
+            var entity = await _appDbContext.Availabilities.FirstOrDefaultAsync(x => x.Id == availabilityId);
+            if (entity == null)
+            {
+                return new GenResponse<bool> { Success = false, Message = " availability not found", Body = false };
+            }
+
+            entity.Duration = availabilityDto.Duration;
+            entity.DateTime = availabilityDto.DateTime;
+            entity.Day = availabilityDto.Day;
+            entity.IsAvailable = availabilityDto.IsAvailable;
+
+            _appDbContext.Update(entity);
+            var isSaved = await _appDbContext.SaveChangesAsync() > 0;
+            return new GenResponse<bool> { Success = isSaved, Message = "doctor availability updated successfully", Body = isSaved };
         }
 
     }

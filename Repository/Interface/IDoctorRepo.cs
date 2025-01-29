@@ -9,8 +9,8 @@ namespace HospitalApointmentManagementSystem.Repository.Interface
         public Task<GenResponse<bool>> AddDoctor(AddDoctorDto doctorDto);
         public Task<GenResponse<GetDoctorDto>> GetDoctorById(int doctorId);
         public Task<GenResponse<PaginatedResponse<List<GetDoctorDto>>>> GetAllDoctors(SearchOptions searchOption);
-        public void AddDoctorAvailabilityById();
-        public void GetDoctorAvailabilityById();
-        public void UPdateDoctorAvailability();
+        public Task<GenResponse<bool>> AddDoctorAvailabilityById(AddAvailabilityDto availabilityDto);
+        public Task<GenResponse<List<GetAvailabilityDto>>> GetDoctorAvailabilityById(int doctorId);
+        public Task<GenResponse<bool>> UPdateDoctorAvailability(UpdateAvailabilityDto availabilityDto, int availabilityId);
     }
 }
